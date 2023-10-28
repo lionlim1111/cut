@@ -1,108 +1,328 @@
-<!-- Creating by LION LIM | www.lsb2023.lionlim.com | www.lionlim.com/lsb2023 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="shortcut icon" href="logo slb.jpg" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik's Cube Timer</title>
+    <style>
+        /* CSS 样式可以根据需求自定义 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
 
-    <!--======= CSS =======-->
-    <link rel="stylesheet" href="style.css">
+        #timer-container {
+            text-align: center;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            margin: 20px auto;
+            max-width: 400px;
+            padding: 20px;
+        }
 
-    <!----===== Boxicons CSS ===== -->
-    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
-    
-    <title>Lawatan Sambil Belajar - SMKMIL</title>
+        #scramble {
+            font-size: 24px;
+            margin-top: 10px;
+        }
+
+        #timer {
+            font-size: 48px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #controls {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin: 5px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #records {
+            margin-top: 30px;
+        }
+
+        #recordList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            font-size: 16px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+
+        h2 {
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <nav class="sidebar close">
-        <header>
-            <div class="image-text">
-                <span class="image">
-                    <img src="logo.png">
-                </span>
-
-                <div class="text logo-text">
-                    <span class="name">SMK MUNSHI<br>IBRAHIM LABIS</span>
-                </div>
-            </div>
-
-            <i class='bx bx-menu toggle'></i>
-        </header>
-
-        <div class="menu-bar">
-            <div class="menu">
-
-                <li class="search-box">
-                    <i class='bx bx-search icon'></i>
-                    <input type="text" placeholder="Search...">
-                </li>
-
-                <ul class="menu-links">
-                    <li class="nav-link">
-                        <a href="index.html">
-                            <i class='bx bx-home-alt icon' ></i>
-                            <span class="text nav-text">Home</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-link">
-                        <a href="about-us.html">
-                            <i class='bx bx-user icon' ></i>
-                            <span class="text nav-text">About Us</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-link">
-                        <a href="info.html">
-                            <i class='bx bx-info-circle icon' ></i>
-                            <span class="text nav-text">Information</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-link">
-                        <a href="noti.html">
-                            <i class='bx bx-bell icon'></i>
-                            <span class="text nav-text">Notifications</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-link">
-                        <a href="register.html">
-                            <i class='bx bx-registered icon' ></i>
-                            <span class="text nav-text">Register Form</span>
-                        </a>
-                    </li>
-
-                    
-
-                </ul>
-            </div>
-
-            <div class="bottom-content">
-
-                <li class="mode">
-                    <div class="sun-moon">
-                        <i class='bx bx-moon icon moon'></i>
-                        <i class='bx bx-sun icon sun'></i>
-                    </div>
-                    <span class="mode-text text">Dark mode</span>
-
-                    <div class="toggle-switch">
-                        <span class="switch"></span>
-                    </div>
-                </li>
-                
-            </div>
+    <div id="timer-container">
+        <div id="scramble">打乱公式：[打乱公式显示在此,请点击换打乱公式]</div>
+        <div id="timer">00:00:000</div>
+        <div id="controls">
+            <button id="startStopButton">开始</button>
+            <button id="resetButton">重置</button>
+            <button id="changeScrambleButton">换打乱公式</button>
+            <button id="downloadRecordsButton">下载记录</button>
         </div>
+        <div id="records">
+            <h2>记录栏</h2>
+            <ul id="recordList">
+                <!-- 记录将在此处动态添加 -->
+            </ul>
+        </div>
+    </div>
 
-    </nav>
+    <script>
 
-    <section class="home">
-        <div class="text">HOME</div>
-    </section>
+        let timerInterval;
+        let startTime;
+        let running = false;
+        let isLongPress = false;
+        let scramble = "打乱公式"; // 你需要实现生成打乱公式的逻辑
+        let records = []; // 用于存储记录
 
-    <script src="script.js"></script>
+        document.getElementById("timer").textContent = "00:00:000";
 
+        function startTimer(event) {
+    if (event.detail === 1) {
+        if (longPressTimeout) {
+            clearTimeout(longPressTimeout);
+            resetTimer();
+            startTimer();
+        } else if (!running) {
+            scramble = generateScramble();
+            // 在这里再次设置计时器的初始时间为 "00:00:000"
+            document.getElementById("timer").textContent = "00:00:000";
+            startTime = new Date().getTime();
+            timerInterval = setInterval(updateTimer, 10);
+            running = true;
+            document.getElementById("startButton").textContent = "暂停";
+        } else {
+            clearInterval(timerInterval);
+            running = false;
+            document.getElementById("startButton").textContent = "继续";
+        }
+    }
+}
+
+
+
+
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            running = false;
+            document.getElementById("timer").textContent = "00:00:000";
+            document.getElementById("startButton").textContent = "开始";
+            longPressTimeout = null;
+        }
+
+        const startStopButton = document.getElementById("startStopButton");
+        const resetButton = document.getElementById("resetButton");
+        const scrambleElement = document.getElementById("scramble");
+        const timerElement = document.getElementById("timer");
+        const recordList = document.getElementById("recordList");
+
+        startStopButton.addEventListener("click", toggleTimer);
+        resetButton.addEventListener("click", resetTimer);
+
+        startStopButton.addEventListener("mousedown", (e) => {
+            if (e.button === 0) {
+                startTimer();
+                isLongPress = true;
+            }
+        });
+
+        startStopButton.addEventListener("mouseup", (e) => {
+            if (e.button === 0) {
+                if (isLongPress) {
+                    resetTimer();
+                }
+            }
+        });
+
+        changeScrambleButton.addEventListener("click", changeScramble);
+        downloadRecordsButton.addEventListener("click", downloadRecords);
+
+        function toggleTimer() {
+    if (!running) {
+        if (isLongPress) {
+            scramble = generateScramble(); // 你需要实现生成打乱公式的逻辑
+        }
+
+        startTime = new Date().getTime();
+        timerInterval = setInterval(updateTimer, 10);
+        running = true;
+        startStopButton.textContent = "停止"; // 将 "startButton" 更改为 "startStopButton"
+    } else {
+        clearInterval(timerInterval);
+        running = false;
+        startStopButton.textContent = "开始"; // 将 "startButton" 更改为 "startStopButton"
+        saveRecord(timerElement.textContent, scramble);
+    }
+}
+
+
+        function resetTimer() {
+            if (running) {
+                clearInterval(timerInterval);
+                running = false;
+            }
+            timerElement.textContent = "00:00:000";
+            startStopButton.textContent = "开始";
+        }
+
+        function updateTimer() {
+            const currentTime = new Date().getTime();
+            const elapsedTime = new Date(currentTime - startTime);
+            const minutes = String(elapsedTime.getMinutes()).padStart(2, "0");
+            const seconds = String(elapsedTime.getSeconds()).padStart(2, "0");
+            const milliseconds = String(elapsedTime.getMilliseconds()).padStart(3, "0");
+            timerElement.textContent = `${minutes}:${seconds}:${milliseconds}`;
+        }
+
+        function changeScramble() {
+            scramble = generateScramble(); // 你需要实现生成打乱公式的逻辑
+            scrambleElement.textContent = `打乱公式：${scramble}`;
+        }
+
+        function saveRecord(time, scramble) {
+            records.push({ time, scramble });
+            updateRecordList();
+        }
+
+        function updateRecordList() {
+            recordList.innerHTML = "";
+            records.forEach((record, index) => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `${index + 1}. ${record.time} - ${record.scramble}`;
+                recordList.appendChild(listItem);
+            });
+        }
+
+        function downloadRecords() {
+            const recordsText = records.map(record => `${record.time} - ${record.scramble}`).join("\n");
+            const blob = new Blob([recordsText], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "rubiks_cube_records.txt";
+            a.click();
+        }
+
+        function generateScramble() {
+    const moves = ["R", "L", "U", "D", "F", "B"]; // 魔方的六个面
+    const modifiers = ["", "'", "2"]; // 转动方式：顺时针、逆时针、180度
+
+    let scramble = [];
+    
+    for (let i = 0; i < 20; i++) { // 这里生成一个包含20步的打乱公式
+        const moveIndex = Math.floor(Math.random() * 6); // 随机选择一个面
+        const modifierIndex = Math.floor(Math.random() * 3); // 随机选择一个转动方式
+        const randomMove = moves[moveIndex] + modifiers[modifierIndex];
+        
+        // 防止连续两次相同的转动，例如 "R R"，这是无效的
+        if (i > 0 && randomMove[0] === scramble[i - 1][0]) {
+            i--;
+        } else {
+            scramble.push(randomMove);
+        }
+    }
+
+    const scrambleString = scramble.join(' ');
+    document.getElementById("scramble").textContent = scrambleString; // 更新打乱公式显示
+    return scrambleString;
+}
+
+// 保存记录的函数
+function saveRecord(time, scramble) {
+    records.push({ time, scramble });
+    updateRecordsList(); // 每次保存记录后更新记录列表
+}
+
+// 更新记录列表的函数
+function updateRecordsList() {
+    const recordsList = document.getElementById("records");
+
+    // 清空现有列表
+    recordsList.innerHTML = '';
+
+    // 遍历 records 数组并添加记录到列表
+    records.forEach((record, index) => {
+        const li = document.createElement("li");
+        li.textContent = `记录 ${index + 1}: 时间 ${record.time}, 打乱公式 : ${record.scramble}`;
+        recordsList.appendChild(li);
+    });
+
+    // 更新最快时间和当前计时转速
+    updateFastestTime();
+    updateCurrentTPS();
+}
+
+// 更新最快时间
+function updateFastestTime() {
+    if (records.length > 0) {
+        const fastestTime = Math.min(...records.map(record => record.time));
+        document.getElementById("fastestTime").textContent = `最快时间: ${fastestTime}`;
+    }
+}
+
+// 更新当前计时转速
+function updateCurrentTSP() {
+    if (records.length > 0) {
+        const lastRecordTime = records[records.length - 1].time;
+        const currentTime = new Date().getTime();
+        const tps = 1000 / (currentTime - lastRecordTime);
+        document.getElementById("currentTSP").textContent = `当前转速: ${tps.toFixed(2)} TPS`;
+    }
+}
+
+function downloadRecords() {
+    const recordsText = records.map((record, index) => {
+        return `记录 ${index + 1}:\r\n时间: ${record.time}\r\n打乱公式: ${record.scramble}\r\n\r\n`;
+    }).join("\r\n");
+
+    // 创建一个Blob对象，将文本内容写入其中
+    const blob = new Blob([recordsText], { type: "text/plain" });
+
+    // 创建一个下载链接
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "rubiks_cube_records.txt";
+    a.click();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("timer").textContent = "00:00:000";
+    // 其他初始化代码
+});
+
+
+
+
+
+    </script>
 </body>
 </html>
