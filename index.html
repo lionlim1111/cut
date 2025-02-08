@@ -3,35 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="Rubik's Cube Timer">
     <title>Rubik's Cube Timer</title>
     <style>
-        /* CSS 样式可以根据需求自定义 */
+        /* Modern styling */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         #timer-container {
             text-align: center;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-            margin: 20px auto;
+            background-color: #2c2c2c;
+            border-radius: 15px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
+            padding: 30px;
             max-width: 400px;
-            padding: 20px;
+            width: 100%;
         }
 
         #scramble {
-            font-size: 24px;
-            margin-top: 10px;
+            font-size: 20px;
+            margin: 20px 0;
+            color: #ffcc00;
         }
 
         #timer {
-            font-size: 48px;
+            font-size: 64px;
             font-weight: bold;
-            margin-top: 10px;
+            margin: 20px 0;
+            color: #00ffcc;
         }
 
         #controls {
@@ -39,14 +47,15 @@
         }
 
         button {
-            padding: 10px 20px;
-            font-size: 18px;
-            margin: 5px;
+            padding: 12px 24px;
+            font-size: 16px;
+            margin: 8px;
             background-color: #007BFF;
-            color: #fff;
+            color: #ffffff;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
@@ -65,20 +74,21 @@
         li {
             font-size: 16px;
             margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
             padding: 10px;
-            background-color: #f9f9f9;
+            background-color: #3a3a3a;
+            border-radius: 8px;
+            color: #ffffff;
         }
 
         h2 {
             margin: 0;
+            color: #ffcc00;
         }
     </style>
 </head>
 <body>
     <div id="timer-container">
-        <div id="scramble">打乱公式：[打乱公式显示在此,请点击换打乱公式]</div>
+        <div id="scramble">打乱公式：[点击生成打乱公式]</div>
         <div id="timer">00:00:000</div>
         <div id="controls">
             <button id="startStopButton">开始</button>
@@ -88,132 +98,75 @@
         </div>
         <div id="records">
             <h2>记录栏</h2>
-            <ul id="recordList">
-                <!-- 记录将在此处动态添加 -->
-            </ul>
+            <ul id="recordList"></ul>
         </div>
     </div>
 
     <script>
-
         let timerInterval;
         let startTime;
         let running = false;
-        let isLongPress = false;
-        let scramble = "打乱公式"; // 你需要实现生成打乱公式的逻辑
-        let records = []; // 用于存储记录
+        let scramble = generateScramble();
+        let records = [];
 
-        document.getElementById("timer").textContent = "00:00:000";
+        // Initialize display
+        document.getElementById("scramble").textContent = `打乱公式：${scramble}`;
 
-        function startTimer(event) {
-    if (event.detail === 1) {
-        if (longPressTimeout) {
-            clearTimeout(longPressTimeout);
-            resetTimer();
-            startTimer();
-        } else if (!running) {
-            scramble = generateScramble();
-            // 在这里再次设置计时器的初始时间为 "00:00:000"
-            document.getElementById("timer").textContent = "00:00:000";
-            startTime = new Date().getTime();
-            timerInterval = setInterval(updateTimer, 10);
-            running = true;
-            document.getElementById("startButton").textContent = "暂停";
-        } else {
-            clearInterval(timerInterval);
-            running = false;
-            document.getElementById("startButton").textContent = "继续";
-        }
-    }
-}
-
-
-
-
-
-        function resetTimer() {
-            clearInterval(timerInterval);
-            running = false;
-            document.getElementById("timer").textContent = "00:00:000";
-            document.getElementById("startButton").textContent = "开始";
-            longPressTimeout = null;
-        }
-
-        const startStopButton = document.getElementById("startStopButton");
-        const resetButton = document.getElementById("resetButton");
-        const scrambleElement = document.getElementById("scramble");
-        const timerElement = document.getElementById("timer");
-        const recordList = document.getElementById("recordList");
-
-        startStopButton.addEventListener("click", toggleTimer);
-        resetButton.addEventListener("click", resetTimer);
-
-        startStopButton.addEventListener("mousedown", (e) => {
-            if (e.button === 0) {
-                startTimer();
-                isLongPress = true;
-            }
-        });
-
-        startStopButton.addEventListener("mouseup", (e) => {
-            if (e.button === 0) {
-                if (isLongPress) {
-                    resetTimer();
-                }
-            }
-        });
-
-        changeScrambleButton.addEventListener("click", changeScramble);
-        downloadRecordsButton.addEventListener("click", downloadRecords);
+        // Event Listeners
+        document.getElementById("startStopButton").addEventListener("click", toggleTimer);
+        document.getElementById("resetButton").addEventListener("click", resetTimer);
+        document.getElementById("changeScrambleButton").addEventListener("click", changeScramble);
+        document.getElementById("downloadRecordsButton").addEventListener("click", downloadRecords);
 
         function toggleTimer() {
-    if (!running) {
-        if (isLongPress) {
-            scramble = generateScramble(); // 你需要实现生成打乱公式的逻辑
-        }
-
-        startTime = new Date().getTime();
-        timerInterval = setInterval(updateTimer, 10);
-        running = true;
-        startStopButton.textContent = "停止"; // 将 "startButton" 更改为 "startStopButton"
-    } else {
-        clearInterval(timerInterval);
-        running = false;
-        startStopButton.textContent = "开始"; // 将 "startButton" 更改为 "startStopButton"
-        saveRecord(timerElement.textContent, scramble);
-    }
-}
-
-
-        function resetTimer() {
-            if (running) {
+            if (!running) {
+                startTime = new Date().getTime(); // Start time set to current time
+                timerInterval = setInterval(updateTimer, 10); // Update every 10ms
+                running = true;
+                document.getElementById("startStopButton").textContent = "停止";
+            } else {
                 clearInterval(timerInterval);
                 running = false;
+                document.getElementById("startStopButton").textContent = "开始";
+                saveRecord(document.getElementById("timer").textContent, scramble);
+                scramble = generateScramble();
+                document.getElementById("scramble").textContent = `打乱公式：${scramble}`;
             }
-            timerElement.textContent = "00:00:000";
-            startStopButton.textContent = "开始";
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            running = false;
+            document.getElementById("timer").textContent = "00:00:000";
+            document.getElementById("startStopButton").textContent = "开始";
         }
 
         function updateTimer() {
             const currentTime = new Date().getTime();
-            const elapsedTime = new Date(currentTime - startTime);
-            const minutes = String(elapsedTime.getMinutes()).padStart(2, "0");
-            const seconds = String(elapsedTime.getSeconds()).padStart(2, "0");
-            const milliseconds = String(elapsedTime.getMilliseconds()).padStart(3, "0");
-            timerElement.textContent = `${minutes}:${seconds}:${milliseconds}`;
+            const elapsedTime = currentTime - startTime; // Time difference in milliseconds
+            const minutes = Math.floor(elapsedTime / 60000).toString().padStart(2, "0");
+            const seconds = Math.floor((elapsedTime % 60000) / 1000).toString().padStart(2, "0");
+            const milliseconds = (elapsedTime % 1000).toString().padStart(3, "0");
+            document.getElementById("timer").textContent = `${minutes}:${seconds}:${milliseconds}`;
         }
 
         function changeScramble() {
-            scramble = generateScramble(); // 你需要实现生成打乱公式的逻辑
-            scrambleElement.textContent = `打乱公式：${scramble}`;
+            scramble = generateScramble();
+            document.getElementById("scramble").textContent = `打乱公式：${scramble}`;
         }
 
         function saveRecord(time, scramble) {
-            records.push({ time, scramble });
+            records.push({
+                time: time,
+                scramble: scramble,
+                timestamp: new Date().toLocaleString(),
+                milliseconds: new Date().getTime() - startTime
+            });
             updateRecordList();
         }
 
         function updateRecordList() {
+            const recordList = document.getElementById("recordList");
             recordList.innerHTML = "";
             records.forEach((record, index) => {
                 const listItem = document.createElement("li");
@@ -222,107 +175,36 @@
             });
         }
 
+        function generateScramble() {
+            const moves = ["R", "L", "U", "D", "F", "B"];
+            const modifiers = ["", "'", "2"];
+            let scramble = [];
+
+            for (let i = 0; i < 20; i++) {
+                const moveIndex = Math.floor(Math.random() * 6);
+                const modifierIndex = Math.floor(Math.random() * 3);
+                const randomMove = moves[moveIndex] + modifiers[modifierIndex];
+
+                if (i > 0 && randomMove[0] === scramble[i - 1][0]) {
+                    i--;
+                } else {
+                    scramble.push(randomMove);
+                }
+            }
+            return scramble.join(' ');
+        }
+
         function downloadRecords() {
-            const recordsText = records.map(record => `${record.time} - ${record.scramble}`).join("\n");
+            const recordsText = records.map((record, index) =>
+                `记录 ${index + 1}:\r\n时间: ${record.time}\r\n打乱公式: ${record.scramble}\r\n日期: ${record.timestamp}\r\n\r\n`
+            ).join("\r\n");
+
             const blob = new Blob([recordsText], { type: "text/plain" });
-            const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
-            a.href = url;
-            a.download = "rubiks_cube_records.txt";
+            a.href = URL.createObjectURL(blob);
+            a.download = `魔方记录_${new Date().toLocaleDateString().replace(/\//g, '-')}.txt`;
             a.click();
         }
-
-        function generateScramble() {
-    const moves = ["R", "L", "U", "D", "F", "B"]; // 魔方的六个面
-    const modifiers = ["", "'", "2"]; // 转动方式：顺时针、逆时针、180度
-
-    let scramble = [];
-    
-    for (let i = 0; i < 20; i++) { // 这里生成一个包含20步的打乱公式
-        const moveIndex = Math.floor(Math.random() * 6); // 随机选择一个面
-        const modifierIndex = Math.floor(Math.random() * 3); // 随机选择一个转动方式
-        const randomMove = moves[moveIndex] + modifiers[modifierIndex];
-        
-        // 防止连续两次相同的转动，例如 "R R"，这是无效的
-        if (i > 0 && randomMove[0] === scramble[i - 1][0]) {
-            i--;
-        } else {
-            scramble.push(randomMove);
-        }
-    }
-
-    const scrambleString = scramble.join(' ');
-    document.getElementById("scramble").textContent = scrambleString; // 更新打乱公式显示
-    return scrambleString;
-}
-
-// 保存记录的函数
-function saveRecord(time, scramble) {
-    records.push({ time, scramble });
-    updateRecordsList(); // 每次保存记录后更新记录列表
-}
-
-// 更新记录列表的函数
-function updateRecordsList() {
-    const recordsList = document.getElementById("records");
-
-    // 清空现有列表
-    recordsList.innerHTML = '';
-
-    // 遍历 records 数组并添加记录到列表
-    records.forEach((record, index) => {
-        const li = document.createElement("li");
-        li.textContent = `记录 ${index + 1}: 时间 ${record.time}, 打乱公式 : ${record.scramble}`;
-        recordsList.appendChild(li);
-    });
-
-    // 更新最快时间和当前计时转速
-    updateFastestTime();
-    updateCurrentTPS();
-}
-
-// 更新最快时间
-function updateFastestTime() {
-    if (records.length > 0) {
-        const fastestTime = Math.min(...records.map(record => record.time));
-        document.getElementById("fastestTime").textContent = `最快时间: ${fastestTime}`;
-    }
-}
-
-// 更新当前计时转速
-function updateCurrentTSP() {
-    if (records.length > 0) {
-        const lastRecordTime = records[records.length - 1].time;
-        const currentTime = new Date().getTime();
-        const tps = 1000 / (currentTime - lastRecordTime);
-        document.getElementById("currentTSP").textContent = `当前转速: ${tps.toFixed(2)} TPS`;
-    }
-}
-
-function downloadRecords() {
-    const recordsText = records.map((record, index) => {
-        return `记录 ${index + 1}:\r\n时间: ${record.time}\r\n打乱公式: ${record.scramble}\r\n\r\n`;
-    }).join("\r\n");
-
-    // 创建一个Blob对象，将文本内容写入其中
-    const blob = new Blob([recordsText], { type: "text/plain" });
-
-    // 创建一个下载链接
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "rubiks_cube_records.txt";
-    a.click();
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("timer").textContent = "00:00:000";
-    // 其他初始化代码
-});
-
-
-
-
-
     </script>
 </body>
 </html>
